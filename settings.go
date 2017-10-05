@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"os/user"
+	"path/filepath"
 )
 
 type Settings struct {
@@ -22,8 +24,10 @@ func NewSettings(data interface{}, paths []string) (*Settings, error) {
 	}
 
 	for _, filePath := range paths {
-		if _, err := os.Stat(filePath); !os.IsNotExist(err) {
-			set.SavePath = filePath
+		path := expandTilde(filePath)
+
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			set.SavePath = path
 		}
 	}
 	if set.SavePath == "" {
@@ -42,6 +46,15 @@ func NewSettings(data interface{}, paths []string) (*Settings, error) {
 	}
 
 	return &set, nil
+}
+func expandTilde(path string) string {
+	usr, _ := user.Current()
+	dir := usr.HomeDir
+
+	if len(path) > 1 && path[:2] == "~/" {
+		path = filepath.Join(dir, path[2:])
+	}
+	return path
 }
 
 func (s *Settings) Save() error {
