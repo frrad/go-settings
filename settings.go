@@ -23,7 +23,7 @@ func NewSettings(data interface{}, paths []string) (*Settings, error) {
 		SavePaths: paths,
 	}
 
-	for _, filePath := range paths {
+	for _, filePath := range set.SavePaths {
 		path := expandTilde(filePath)
 
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
@@ -31,7 +31,7 @@ func NewSettings(data interface{}, paths []string) (*Settings, error) {
 		}
 	}
 	if set.SavePath == "" {
-		set.SavePath = set.SavePaths[0]
+		set.SavePath = expandTilde(set.SavePaths[0])
 		if err := set.Save(); err != nil {
 			return nil, err
 		}
